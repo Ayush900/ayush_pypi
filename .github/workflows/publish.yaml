@@ -1,0 +1,47 @@
+name: Publish Python Package to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger the workflow when a version tag is pushed (e.g., v1.0.0)
+
+jobs:
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/project/<your-pypi-project-name>  # Replace with your actual PyPI project name
+
+    permissions:
+      id-token: write  # IMPORTANT: This permission is required for trusted publishing (GitHub Actions -> PyPI)
+
+    steps:
+      # Step 1: Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'  # Use the version of Python that matches your package
+
+      # Step 3: Install build dependencies
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      # Step 4: Build the package
+      - name: Build package
+        run: |
+          python setup.py sdist bdist_wheel  # Build the package distribution
+
+      # Step 5: Publish to PyPI
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: ${{ secrets.PYPI_USERNAME }}  # Use your PyPI username from GitHub secrets
+          password: ${{ secrets.PYPI_PASSWORD }}  # Use your PyPI API token from GitHub secrets
