@@ -1,9 +1,9 @@
 name: Publish Python Package to PyPI
 
 on:
-  push:
-    tags:
-      - 'v*'  # Trigger the workflow when a version tag is pushed (e.g., v1.0.0)
+  release:
+    types:
+      - published  # Trigger the workflow when a release is published
 
 jobs:
   pypi-publish:
@@ -12,7 +12,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/project/<your-pypi-project-name>  # Replace with your actual PyPI project name
+      url: https://pypi.org/project/ayush_py/  # Placeholder URL
 
     permissions:
       id-token: write  # IMPORTANT: This permission is required for trusted publishing (GitHub Actions -> PyPI)
