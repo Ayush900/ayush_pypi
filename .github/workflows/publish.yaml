@@ -1,9 +1,9 @@
-name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+name: Publish Python 🐍 distribution 📦 to PyPI
 
 on:
   release:
     types:
-      - published  # Trigger when a release is published (push a tag to trigger this)
+      - published  # Trigger when a release is published
 
 jobs:
   build:
@@ -11,84 +11,75 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code from the repository
       - uses: actions/checkout@v4
 
-      # Step 2: Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      # Step 3: Install build tools (build, wheel, twine)
-      - name: Install pypa/build
+      - name: Install build dependencies
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install build twine --user
 
-      # Step 4: Build the package (wheel and source tarball)
-      - name: Build a binary wheel and a source tarball
+      - name: Build package distribution
         run: |
-          cd ayush_py
-          python3 -m build  # This creates the dist/ folder with the build artifacts (wheel, tar.gz)
+          cd ayush_py  # Ensure you are in the correct directory
+          python3 -m build
 
-      # Step 5: Store the distribution packages as artifacts
-      - name: Store the distribution packages
+      - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: ayush_py/dist/
 
   publish-to-pypi:
-    name: Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref, 'refs/tags/')  # Only run when a tag is pushed
+    name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/')  # Only on tag push
     needs:
       - build
     runs-on: ubuntu-latest
     environment:
       name: pypi
     permissions:
-      id-token: write  # This permission is required for Trusted Publishing
+      id-token: write  # Mandatory for Trusted Publishing
     steps:
-      # Step 1: Download the build artifacts (the distributions)
-      - name: Download all the dists
+      - name: Download distribution artifacts
         uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
 
-      # Step 2: Publish distribution 📦 to PyPI using Twine
-      - name: Publish distribution 📦 to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: ${{ secrets.PYPI_USERNAME }}  # Use your PyPI username from GitHub secrets
-          password: ${{ secrets.PYPI_API_TOKEN }}  # Use your PyPI API token stored in GitHub secrets
+          user: ${{ secrets.PYPI_USERNAME }}  # Optional (can be omitted if using trusted publisher)
+          password: ${{ secrets.PYPI_API_TOKEN }}  # Optional (can be omitted if using trusted publisher)
+          # These fields can be omitted after configuring Trusted Publishers
 
   github-release:
-    name: Sign the Python 🐍 distribution 📦 with Sigstore and upload them to GitHub Release
+    name: Create GitHub Release and sign the package
     needs:
       - publish-to-pypi
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Permission to make GitHub Releases
-      id-token: write  # Permission for sigstore to sign artifacts
+      contents: write  # For creating GitHub Releases
+      id-token: write  # For Sigstore to sign artifacts
     steps:
-      # Step 1: Download the distribution files again
-      - name: Download all the dists
+      - name: Download distribution artifacts
         uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
 
-      # Step 2: Sign the distributions using Sigstore (optionally)
-      - name: Sign the dists with Sigstore
+      - name: Sign the distribution with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
 
-      # Step 3: Create GitHub Release and upload the signed distributions
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -97,7 +88,6 @@ jobs:
           --repo ${{ github.repository }}
           --notes "Release Notes"
 
-      # Step 4: Upload artifact signatures to GitHub Release
       - name: Upload artifact signatures to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
