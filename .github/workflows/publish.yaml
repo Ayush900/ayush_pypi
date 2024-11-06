@@ -22,7 +22,9 @@ jobs:
           python3 -m pip install build --user
 
       - name: Build a binary wheel and a source tarball
-        run: python3 -m build
+        run: |
+          cd ayush_py
+          python3 -m build
 
       - name: Store the distribution packages
         uses: actions/upload-artifact@v4
