@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ayush_py',  # The name of your package
-    version='0.1.0',   # Initial version of your package
+    version='0.1.8',   # Initial version of your package
     packages=find_packages(),  # Automatically find all the packages
     install_requires=[],  # List of dependencies (empty in this case)
     long_description=open('README.md').read(),  # Use the README as long description
