@@ -6,8 +6,7 @@ on:
       - published  # Trigger when a release is published
 
 jobs:
-  publish-to-pypi:
-    pypi-publish:
+  pypi-publish:
     name: Publish release to PyPI
     runs-on: ubuntu-latest
     steps:
