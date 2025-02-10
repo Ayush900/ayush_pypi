@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 jobs:
-  build_Store:
+  build:
     name: Publish release to PyPI
     runs-on: ubuntu-latest
     steps:
