@@ -6,53 +6,30 @@ on:
       - published  # Trigger when a release is published
 
 jobs:
-  build:
-    name: Build distribution 📦
+  publish-to-pypi:
+    pypi-publish:
+    name: Publish release to PyPI
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install build twine --user
-
-      - name: Build package distribution
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+      - name: Build package
         run: |
-          cd ayush_py  # Ensure you are in the correct directory
-          python3 -m build
-
-      - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-package-distributions
-          path: ayush_py/dist/
-
-  publish-to-pypi:
-    name: Publish to PyPI
-    if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-    permissions:
-      id-token: write
-    steps:
-      - name: Download distribution artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
+          python setup.py sdist bdist_wheel
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          username: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}  # Fetch PyPI username from secrets
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}  # Fetch PyPI password or API token from secrets
+        run: |
+          pip install twine  # Install twine to upload packages
+          echo "Uploading distributions to PyPI..."
+          twine upload dist/*  # Upload the distribution files
