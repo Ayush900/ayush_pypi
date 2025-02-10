@@ -24,6 +24,7 @@ jobs:
           pip install setuptools wheel
       - name: Build package
         run: |
+          pwd
           python3 -m build
       - name: Publish to PyPI
         env:
