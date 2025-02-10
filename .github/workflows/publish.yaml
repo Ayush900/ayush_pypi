@@ -34,4 +34,6 @@ jobs:
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}  # Fetch PyPI password or API token from secrets
         run: |
           echo "Uploading distributions to PyPI..."
+          pwd
+          ls
           twine upload dist/*  # Upload the distribution files
