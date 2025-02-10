@@ -25,6 +25,8 @@ jobs:
       - name: Build package
         run: |
           pwd
+          cd ayush_py
+          ls
           python3 -m build
       - name: Publish to PyPI
         env:
